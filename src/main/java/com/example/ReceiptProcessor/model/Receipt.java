@@ -17,9 +17,9 @@ public class Receipt {
 
     private String retailer;
 
-    private LocalDate purchaseDate;
+    private String purchaseDate;
 
-    private LocalTime purchaseTime;
+    private String purchaseTime;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 //    @JoinColumn(name = "receipt_id")
