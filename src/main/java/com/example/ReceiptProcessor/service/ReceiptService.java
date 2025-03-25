@@ -16,7 +16,7 @@ public class ReceiptService {
     private final ReceiptRepository receiptRepository;
 
     @Transactional
-    public String processReceiptId(Receipt receipt) {
+    public String generateReceiptId(Receipt receipt) {
         String id = UUID.randomUUID().toString();
         receipt.setId(id);
         receiptRepository.save(receipt);
@@ -24,10 +24,9 @@ public class ReceiptService {
     }
 
     @Transactional(readOnly = true)
-    public int getPointsForReceipt(String id) {
+    public int processReceiptPoints(String id) {
         Receipt receipt = receiptRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Receipt not found for ID: " + id));
-
+                .orElseThrow(() -> new IllegalArgumentException("No receipt found for that ID."));
         return PointsCalculator.calculatePoints(receipt);
     }
 }

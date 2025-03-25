@@ -3,12 +3,11 @@ package com.example.ReceiptProcessor.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
-@Data
 @Entity
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Receipt {
@@ -21,8 +20,7 @@ public class Receipt {
 
     private String purchaseTime;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-//    @JoinColumn(name = "receipt_id")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Item> items;
 
     private String total;

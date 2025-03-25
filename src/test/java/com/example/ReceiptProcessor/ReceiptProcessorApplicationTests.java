@@ -10,4 +10,8 @@ class ReceiptProcessorApplicationTests {
 	void contextLoads() {
 	}
 
+	@Test
+	void applicationStarts() {
+		ReceiptProcessorApplication.main(new String[] {});
+	}
 }

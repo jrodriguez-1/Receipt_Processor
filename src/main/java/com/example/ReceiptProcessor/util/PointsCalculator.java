@@ -41,7 +41,7 @@ public class PointsCalculator {
     /**
      * Rule 1: One point for every alphanumeric character in the retailer name.
      */
-    public static int calculateRetailerPoints (String retailer) {
+    public static int calculateRetailerPoints(String retailer) {
         if (retailer == null) return 0;
 
         int points = 0;
@@ -52,7 +52,6 @@ public class PointsCalculator {
                 points++;
             }
         }
-
         return points;
     }
 
@@ -76,7 +75,6 @@ public class PointsCalculator {
         if (totalAmount.remainder(QUARTER).compareTo(BigDecimal.ZERO) == 0) {
             points += 25;
         }
-
         return points;
     }
 
@@ -130,9 +128,8 @@ public class PointsCalculator {
                 return 6;
             }
         } catch (Exception e) {
-            log.error("Failed to parse purchase date: '{}'. Error: {}", purchaseDate, e.getMessage());
+            return 0;
         }
-
         return 0;
     }
 
@@ -149,9 +146,8 @@ public class PointsCalculator {
                 return 10;
             }
         } catch (Exception e) {
-            log.error("Failed to parse purchase time: '{}'. Error: {}", purchaseTime, e.getMessage());
+            return 0;
         }
-
         return 0;
     }
 
@@ -162,7 +158,6 @@ public class PointsCalculator {
         try {
             return new BigDecimal(amount);
         } catch (NumberFormatException | NullPointerException e) {
-            log.error("Failed to parse amount: '{}'. Error: {}", amount, e.getMessage());
             return null;
         }
     }

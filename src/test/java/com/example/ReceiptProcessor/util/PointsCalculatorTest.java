@@ -1,197 +1,209 @@
 package com.example.ReceiptProcessor.util;
 
-import com.example.ReceiptProcessor.model.Item;
+import com.example.ReceiptProcessor.builder.ReceiptBuilder;
 import com.example.ReceiptProcessor.model.Receipt;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class PointsCalculatorTest {
 
+    /**
+     * Testing given scenarios
+     **/
     @Test
     void calculatePoints_validReceipt1_returns28Points() {
-        Receipt receipt = new Receipt();
-        receipt.setRetailer("Target");
-        receipt.setPurchaseDate("2022-01-01");
-        receipt.setPurchaseTime("12:00");
-        receipt.setItems(new ArrayList<>());
-
-        List<Item> items = Arrays.asList(
-            createItem("Mountain Dew 12PK", "6.49"),
-            createItem("Emils Cheese Pizza", "12.25"),
-            createItem("Knorr Creamy Chicken", "1.26"),
-            createItem("Doritos Nacho Cheese", "3.35"),
-            createItem("   Klarbrunn 12-PK 12 FL OZ  ", "12.00")
-        );
-        receipt.setItems(items);
-        receipt.setTotal("35.35");
+        Receipt receipt = ReceiptBuilder.buildReceipt()
+                .withRetailer("Target")
+                .withPurchaseDate("2022-01-01")
+                .withPurchaseTime("12:00")
+                .withItems("Mountain Dew 12PK", "6.49")
+                .withItems("Emils Cheese Pizza", "12.25")
+                .withItems("Knorr Creamy Chicken", "1.26")
+                .withItems("Doritos Nacho Cheese", "3.35")
+                .withItems("Klarbrunn 12-PK 12 FL OZ  ", "12.00")
+                .withTotal("35.35")
+                .build();
 
         assertEquals(28, PointsCalculator.calculatePoints(receipt));
     }
 
     @Test
     void calculatePoints_validReceipt2_returns109Points() {
-        Receipt receipt = new Receipt();
-        receipt.setRetailer("M&M Corner Market");
-        receipt.setPurchaseDate("2022-03-20");
-        receipt.setPurchaseTime("14:33");
-        receipt.setItems(new ArrayList<>());
-
-        List<Item> items = Arrays.asList(
-            createItem("Gatorade", "2.25"),
-            createItem("Gatorade", "2.25"),
-            createItem("Gatorade", "2.25"),
-            createItem("Gatorade", "2.25")
-        );
-        receipt.setItems(items);
-        receipt.setTotal("9.00");
+        Receipt receipt = ReceiptBuilder.buildReceipt()
+                .withRetailer("M&M Corner Market")
+                .withPurchaseDate("2022-03-20")
+                .withPurchaseTime("14:33")
+                .withItems("Gatorade", "2.25")
+                .withItems("Gatorade", "2.25")
+                .withItems("Gatorade", "2.25")
+                .withItems("Gatorade", "2.25")
+                .withTotal("9.00")
+                .build();
 
         assertEquals(109, PointsCalculator.calculatePoints(receipt));
     }
 
     @Test
     void shouldReturn0Points_whenReceiptIsNull() {
-
         assertEquals(0, PointsCalculator.calculatePoints(null));
     }
 
     @Test
-    void handlesEmptyValues_whenCalculatingPoints() {
+    void whenNullRetailer_shouldNotAddRetailerPoints() {
 
-        Receipt receipt = new Receipt();
-        receipt.setRetailer("");
-        receipt.setPurchaseDate("2022-01-01");
-        receipt.setPurchaseTime("");
-        receipt.setItems(new ArrayList<>());
-        receipt.setTotal("");
+        Receipt receipt = ReceiptBuilder.buildReceipt()
+                .withRetailer(null)
+                .withPurchaseDate("2022-01-02")
+                .withPurchaseTime("12:00")
+                .withItems("", "")
+                .withTotal("0.01")
+                .build();
+
+        assertEquals(0, PointsCalculator.calculatePoints(receipt));
+    }
+
+    @Test
+    void nullItemsEmptyValues_shouldReturn75() {
+
+        Receipt receipt = ReceiptBuilder.buildReceipt()
+                .withRetailer(null)
+                .withPurchaseDate("2022-01-02")
+                .withPurchaseTime("12:00")
+                .withItems(null, null)
+                .withTotal("0.00")
+                .build();
+
+        assertEquals(75, PointsCalculator.calculatePoints(receipt));
+    }
+
+    @Test
+    void givenInvalidPurchaseDate_shouldReturns75Points() {
+        Receipt receipt = ReceiptBuilder.buildReceipt()
+                .withRetailer("")
+                .withPurchaseDate("not-a-valid-date")
+                .withPurchaseTime("12:00")
+                .withItems("Soda", "1.50")
+                .withItems("Candy", "1.50")
+                .withTotal("3.00")
+                .build();
+
+        assertEquals(80, PointsCalculator.calculatePoints(receipt));
+    }
+
+    /**
+     * Testing item description edge cases
+     **/
+    @Test
+    void calculateItemDescription_handlesAllEdgeCases() {
+        ReceiptBuilder baseBuilder = ReceiptBuilder.buildReceipt()
+                .withRetailer("Walmart")
+                .withPurchaseDate("2022-01-02")
+                .withPurchaseTime("12:00")
+                .withTotal("10.00");
+
+        // Case 1: null items list
+        Receipt nullItems = baseBuilder.withNullItems().build();
+
+        assertEquals(82, PointsCalculator.calculatePoints(nullItems));
+
+        // Case 2: item with null description
+        Receipt nullDescription = baseBuilder.withItemHavingNullDescription("1.00").build();
+
+        assertEquals(82, PointsCalculator.calculatePoints(nullDescription));
+
+        // Case 3: description not multiple of 3
+        Receipt nonMultipleReceipt = baseBuilder.withClearItems()
+                .withItems("Apple", "1.00")
+                .build();
+
+        assertEquals(82, PointsCalculator.calculatePoints(nonMultipleReceipt));
+
+        // Case 4: description multiple of 3 but null price
+        Receipt nullPriceReceipt = baseBuilder.withClearItems()
+                .withItemHavingNullPrice("Hat")
+                .build();
+
+        assertEquals(82, PointsCalculator.calculatePoints(nullPriceReceipt));
+
+        // Case 5: description multiple of 3 with valid price
+        Receipt validReceipt = baseBuilder.withClearItems()
+                .withItems("ABC", "5.00")
+                .build();
+
+        assertEquals(83, PointsCalculator.calculatePoints(validReceipt));
+    }
+
+    /**
+     * Testing empty receipt field scenarios
+     **/
+    @Test
+    void handlesEmptyValues_whenCalculatingPoints() {
+        Receipt receipt = ReceiptBuilder.buildReceipt()
+                .withRetailer("")
+                .withPurchaseDate("2022-01-01")
+                .withPurchaseTime("")
+                .withItems("", "")
+                .withTotal("")
+                .build();
 
         assertEquals(6, PointsCalculator.calculatePoints(receipt));
     }
 
     @Test
-    void givenInvalidPurchaseDate_shoudReturns0Points() {
-        Receipt receipt = new Receipt();
-        receipt.setRetailer("");
-        receipt.setPurchaseDate("not-a-valid-date");
-        receipt.setPurchaseTime("12:00");
-        receipt.setItems(new ArrayList<>());
-        receipt.setTotal("0.01");
-
-        assertEquals(0, PointsCalculator.calculatePoints(receipt));
-    }
-
-    @Test
-    void whenNullRetailer_shouldNotAddRetailerPoints() {
-        Receipt receipt = new Receipt();
-        receipt.setRetailer(null);
-        receipt.setPurchaseDate("2022-01-02");
-        receipt.setPurchaseTime("12:00");
-        receipt.setItems(new ArrayList<>());
-        receipt.setTotal("0.01");
-
-        assertEquals(0, PointsCalculator.calculatePoints(receipt));
-    }
-
-    @Test
-    void nullItemsEmptyValues_shouldReturnZero() {
-        Receipt receipt = new Receipt();
-        receipt.setRetailer("");
-        receipt.setPurchaseDate("2022-01-02");
-        receipt.setPurchaseTime("12:00");
-        receipt.setItems(null);
-        receipt.setTotal("0.01");
-
-        assertEquals(0, PointsCalculator.calculatePoints(receipt));
-    }
-
-    @Test
-    void getItemDescriptionPoints_handlesAllItemDescriptionEdgeCases() {
-        Receipt receipt = new Receipt();
-        receipt.setRetailer("");
-        receipt.setPurchaseDate("2022-01-02");
-        receipt.setPurchaseTime("12:00");
-        receipt.setTotal("0.01");
-
-        List<Item> items = new ArrayList<>();
-
-        // Case 1: null items list
-        receipt.setItems(null);
-        assertEquals(0, PointsCalculator.calculatePoints(receipt));
-
-        // Case 2: item with null description
-        Item nullDescItem = new Item();
-        nullDescItem.setShortDescription(null);
-        nullDescItem.setPrice("1.00");
-        items.add(nullDescItem);
-        receipt.setItems(items);
-        assertEquals(0, PointsCalculator.calculatePoints(receipt));
-
-        // Case 3: description not multiple of 3
-        items.clear();
-        Item nonMultipleItem = new Item();
-        nonMultipleItem.setShortDescription("Apple"); // Length 4
-        nonMultipleItem.setPrice("1.00");
-        items.add(nonMultipleItem);
-        receipt.setItems(items);
-        assertEquals(0, PointsCalculator.calculatePoints(receipt));
-
-        // Case 4: description multiple of 3 but null price
-        items.clear();
-        Item nullPriceItem = new Item();
-        nullPriceItem.setShortDescription("Hat"); // Length 3
-        nullPriceItem.setPrice(null);
-        items.add(nullPriceItem);
-        receipt.setItems(items);
-        assertEquals(0, PointsCalculator.calculatePoints(receipt));
-
-        // Case 5: description multiple of 3 with valid price
-        items.clear();
-        Item validItem = new Item();
-        validItem.setShortDescription("ABC");
-        validItem.setPrice("5.00");
-        items.add(validItem);
-        receipt.setItems(items);
-        assertEquals(1, PointsCalculator.calculatePoints(receipt));
-    }
-
-    @Test
     void calculatePoints_emptyDescriptionAfterTrimming_shouldNotAddPoints() {
-        Receipt receipt = new Receipt();
-        receipt.setRetailer("");
-        receipt.setPurchaseDate("2022-01-02");
-        receipt.setPurchaseTime("12:00");
-        receipt.setTotal("0.01");
 
-        List<Item> items = new ArrayList<>();
+        Receipt receipt = ReceiptBuilder.buildReceipt()
+                .withRetailer("Kroger")
+                .withPurchaseDate("2022-01-02")
+                .withPurchaseTime("12:00")
+                .withItems("   ", "5.00")
+                .withTotal("5.00")
+                .build();
 
-        Item emptyDescItem = new Item();
-        emptyDescItem.setShortDescription("   ");
-        emptyDescItem.setPrice("5.00");
-        items.add(emptyDescItem);
-        receipt.setItems(items);
-
-        assertEquals(0, PointsCalculator.calculatePoints(receipt));
+        assertEquals(81, PointsCalculator.calculatePoints(receipt));
     }
 
-    // Helper methods
-    private Receipt createBaseReceipt() {
-        Receipt receipt = new Receipt();
-        receipt.setRetailer("");
-        receipt.setPurchaseDate("2022-01-01");
-        receipt.setPurchaseTime("12:00");
-        receipt.setItems(new ArrayList<>());
-        receipt.setTotal("0.00");
-        return receipt;
+    @Test
+    void calculatePoints_emptyDescriptionAfterTrimming_shouldNotAdd() {
+
+        Receipt receipt = ReceiptBuilder.buildReceipt()
+                .withRetailer("Kroger")
+                .withPurchaseDate("2022-01-02")
+                .withPurchaseTime("12:00")
+                .withItemHavingNullDescription("5.00")
+                .withTotal("5.00")
+                .build();
+
+        assertEquals(81, PointsCalculator.calculatePoints(receipt));
     }
 
-    private Item createItem(String description, String price) {
-        Item item = new Item();
-        item.setShortDescription(description);
-        item.setPrice(price);
-        return item;
+    /**
+     * Testing purchase time scenarios
+     */
+    @Test
+    void calculatePoints_betweenTwoAndFourPm_return10Points() {
+        Receipt receipt = ReceiptBuilder.buildReceipt()
+                .withRetailer("Jewel")
+                .withPurchaseDate("2025-04-02")
+                .withPurchaseTime("15:30")
+                .withItems("Lemons", "3.00")
+                .withTotal("3.00")
+                .build();
+
+        assertEquals(91, PointsCalculator.calculatePoints(receipt));
+    }
+
+    @Test
+    void calculatePoints_invalidPurchaseTime_return10Points() {
+        Receipt receipt = ReceiptBuilder.buildReceipt()
+                .withRetailer("Jewel")
+                .withPurchaseDate("2025-04-02")
+                .withPurchaseTime("non-valid-time")
+                .withItems("Lemons", "3.00")
+                .withTotal("3.00")
+                .build();
+
+        assertEquals(81, PointsCalculator.calculatePoints(receipt));
     }
 }
