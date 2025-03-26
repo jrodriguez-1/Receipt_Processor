@@ -40,8 +40,9 @@ public class ReceiptTest {
         assertEquals(total, receipt.getTotal());
     }
 
-//    Helper method
-    private Receipt buildReceipt() {
+    /**
+     * Helper method
+     */    private Receipt buildReceipt() {
         Receipt receipt = ReceiptBuilder.buildReceipt()
                 .withId("id-123")
                 .withRetailer("Target")

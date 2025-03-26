@@ -2,7 +2,6 @@ package com.example.ReceiptProcessor.util;
 
 import com.example.ReceiptProcessor.model.Item;
 import com.example.ReceiptProcessor.model.Receipt;
-import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -10,7 +9,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-@Slf4j
 public class PointsCalculator {
 
     private static final BigDecimal QUARTER = new BigDecimal("0.25");
