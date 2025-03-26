@@ -1,7 +1,6 @@
 # Receipt Processor
 
 ## Project Overview
----
 
 This Spring Boot application processes receipts by calculating reward points based on predefined rules. 
 It generates a receipt ID and returns the total points earned. A complete Docker setup is included, with 
@@ -19,7 +18,6 @@ All Docker configurations are located in the following 3 files:
 - src/main/resources: application-docker.properties
 
 ## Application Setup
---- 
 
 ### To Run the Application:
 1. Clone the Repository
@@ -28,7 +26,6 @@ All Docker configurations are located in the following 3 files:
 4. Application should be available on port http://localhost:8080
 
 ## API Endpoints
---- 
 
 ### Process Receipt
 - URL: "/receipts/process"
